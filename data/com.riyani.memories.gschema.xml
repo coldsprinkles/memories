@@ -2,7 +2,7 @@
 <schemalist gettext-domain="memories">
 	<schema id="com.riyani.memories" path="/com/riyani/memories/">
 	  <key name="picture-folder" type="s">
-      <default>"/home/riyani/Pictures/Images/Documents/2024/harish sir teachers day"</default>
+      <default>"/home/riyani/Pictures/Images/randomthingthatdoesntexist"</default>
     </key>
 	  <key name="delay" type="i">
       <default>5</default>
