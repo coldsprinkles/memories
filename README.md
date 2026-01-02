@@ -5,3 +5,5 @@ A picture carousel app for GNOME.
 
 https://github.com/user-attachments/assets/c3e139af-259a-4ef3-8d82-46feb04e53c7
 
+You can switch the picture by using touchpad gestures.
+
