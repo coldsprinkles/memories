@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="memories">
+	<schema id="com.riyani.memories" path="/com/riyani/memories/">
+	  <key name="image-folders" type="as">
+      <default>[]</default>
+      <summary>List of image folders</summary>
+      <description>Stores paths of folders to load images from.</description>
+    </key>
+	</schema>
+</schemalist>
+
+

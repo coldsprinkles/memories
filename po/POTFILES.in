@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/com.riyani.memories.desktop.in
+data/com.riyani.memories.metainfo.xml.in
+data/com.riyani.memories.gschema.xml
+src/main.py
+src/window.py
+src/window.ui
