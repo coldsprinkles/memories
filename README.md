@@ -1,2 +1,3 @@
 # memories
-A picture carousel app for GNOMe
+
+A description of this project.
