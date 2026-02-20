@@ -44,12 +44,15 @@ class MemoriesWindow(Adw.ApplicationWindow):
         menu_model = Gio.Menu()
         menu_model.append("Preferences", "app.preferences")
         menu_model.append("About", "app.about")
+        menu_model.append("Quit", "app.quit")
 
         self.popover_menu.set_menu_model(menu_model)
 
 
         self.set_content(window_handle)
-        self.set_default_size(370, 370)
+        self.set_size_request(-1, -1)
+
+
 
     def on_right_click_pressed(self, gesture, n_press, x, y):
         gesture.set_state(Gtk.EventSequenceState.CLAIMED)
@@ -64,3 +67,4 @@ class MemoriesWindow(Adw.ApplicationWindow):
 
         self.popover_menu.props.pointing_to = rectangle
         self.popover_menu.popup()
+

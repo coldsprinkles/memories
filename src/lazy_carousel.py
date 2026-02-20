@@ -2,8 +2,6 @@ import os
 from gi.repository import Adw, Gtk, GLib
 
 class LazyCarousel(Adw.NavigationPage):
-    __gtype_name__ = 'ImageCarousel'
-
     def __init__(self, settings, **kwargs):
         super().__init__(**kwargs)
         self.settings = settings
@@ -11,14 +9,12 @@ class LazyCarousel(Adw.NavigationPage):
         self.max_index = 0
         self.current_index = 0
 
-        # Carousel setup
         self.carousel = Adw.Carousel()
         self.carousel.set_allow_mouse_drag(False)
         self.carousel.set_hexpand(True)
         self.carousel.set_vexpand(True)
         self.set_child(self.carousel)
 
-        # Reusable picture widgets: left, center, right
         self.widgets = [Gtk.Picture.new_for_filename("") for _ in range(3)]
         for w in self.widgets:
             w.set_hexpand(True)
@@ -26,21 +22,26 @@ class LazyCarousel(Adw.NavigationPage):
             w.set_content_fit(Gtk.ContentFit.COVER)
             self.carousel.append(w)
 
-        # Connect swipe signal
         self.carousel.connect("page-changed", self.on_page_changed)
 
-        # Watch for GSettings updates
-        self.settings.connect("changed::image-folders", self.on_folders_changed)
+        self.settings.connect("changed::image-folders", lambda *_: self.load_images_from_settings())
+        self.settings.connect("changed::image-change-delay", lambda *_: self.start_timer())
 
-        # Load initial images
         self.load_images_from_settings()
+        self.timer = None
+        self.start_timer()
 
-    def on_folders_changed(self, settings, key):
-        """Called when the GSettings 'image-folders' key changes"""
-        self.load_images_from_settings()
+    def start_timer(self):
+        seconds = self.settings.get_int("image-change-delay")
+        if self.timer:
+            GLib.source_remove(self.timer)
+        self.timer = GLib.timeout_add(seconds*1000, self.change_page)
+
+    def change_page(self):
+        self.carousel.scroll_to(self.carousel.get_nth_page(2), True)
+        return True
 
     def load_images_from_settings(self):
-        """Scan all folders from GSettings and rebuild the image list"""
         folders = self.settings.get_strv("image-folders")
         files = []
         for folder in folders:
@@ -49,13 +50,12 @@ class LazyCarousel(Adw.NavigationPage):
                     for f in files_in_dir:
                         if f.lower().endswith((".png", ".jpg", ".jpeg", ".gif")):
                             files.append(os.path.join(root, f))
-        self.image_files = sorted(files)
+        self.image_files = files
         self.max_index = len(self.image_files) - 1
         self.current_index = 0
         self.refresh_widgets()
 
     def refresh_widgets(self):
-        """Update left, center, right widgets based on current index"""
         indices = [
             max(0, self.current_index - 1),
             self.current_index,
@@ -68,7 +68,7 @@ class LazyCarousel(Adw.NavigationPage):
             else:
                 widget.set_filename(None)
 
-        # Scroll to center widget
+
         if self.max_index >= 0:
             self.carousel.scroll_to(self.widgets[1], False)
 
@@ -85,7 +85,8 @@ class LazyCarousel(Adw.NavigationPage):
             GLib.idle_add(self.handle_swipe, direction)
 
     def handle_swipe(self, direction):
-        """Update current index and refresh images"""
+        self.start_timer()
+
         new_index = self.current_index + direction
         if 0 <= new_index <= self.max_index:
             self.current_index = new_index

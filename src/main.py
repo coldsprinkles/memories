@@ -55,7 +55,7 @@ class MemoriesApplication(Adw.Application):
         about = Adw.AboutDialog(application_name='memories',
                                 application_icon='com.riyani.memories',
                                 developer_name='riyani',
-                                version='0.1.0',
+                                version='0.1.9',
                                 developers=['riyani'],
                                 copyright='© 2026 riyani')
         # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.
@@ -73,30 +73,47 @@ class MemoriesApplication(Adw.Application):
         group = Adw.PreferencesGroup()
         group.set_title("Settings")
 
+        folders = Adw.PreferencesGroup()
+        folders.set_title("Folders")
+
         # Folder chooser
-        folderBtn = Gtk.Button(label="Choose Folder", valign=Gtk.Align.CENTER)
-        folderBtn.connect("clicked", self.selectFolder)
-        folderRow = Adw.ActionRow(title="Picture Folder")
-        folderRow.add_suffix(folderBtn)
+        add_btn = Gtk.Button(label="Choose Folder", valign=Gtk.Align.CENTER)
+        add_btn.connect("clicked", self.select_folder)
+        add_row = Adw.ActionRow(title="Picture Folder")
+        add_row.add_suffix(add_btn)
+        folders.add(add_row)
 
         # Clear folders button
-        clearBtn = Gtk.Button(label="Clear All Folders", valign=Gtk.Align.CENTER)
-        clearBtn.connect("clicked", self.clearFolders)
-        clearRow = Adw.ActionRow(title="Clear Folders")
-        clearRow.add_suffix(clearBtn)
+        clear_btn = Gtk.Button(label="Clear", valign=Gtk.Align.CENTER)
+        clear_btn.add_css_class("destructive-action")
+        clear_btn.connect("clicked", self.clear_folders)
+        clear_row = Adw.ActionRow(title="Clear All Folders")
+        clear_row.add_suffix(clear_btn)
+        folders.add(clear_row)
+
+        #Folders
+        """stored_folders = self.settings.get_strv("image-folders")
+        for folder in stored_folders:
+            folder_btn = Gtk.Button.new_from_icon_name("edit-delete")
+            folder_btn.set_valign(Gtk.Align.CENTER)
+            folder_row = Adw.ActionRow(title=str(folder), activatable_widget=folder_btn)
+            folder_row.add_suffix(folder_btn)
+            folders.add(folder_row)
+        """
+
 
         # Delay
-        delaySpin = Gtk.SpinButton.new_with_range(1, 60, 1)
-        delaySpin.set_valign(Gtk.Align.CENTER)
-        delaySpin.connect("value-changed", lambda *args: print("todo"))
-        delayRow = Adw.ActionRow(title="Carousel Delay")
-        delayRow.add_suffix(delaySpin)
-
-        group.add(folderRow)
-        group.add(clearRow)
-        group.add(delayRow)
+        delay_spin = Gtk.SpinButton.new_with_range(1, 3600, 1)
+        seconds = self.settings.get_int("image-change-delay")
+        delay_spin.set_value(seconds)
+        delay_spin.set_valign(Gtk.Align.CENTER)
+        delay_spin.connect("value-changed", self.set_delay)
+        delay_row = Adw.ActionRow(title="Carousel Delay")
+        delay_row.add_suffix(delay_spin)
+        group.add(delay_row)
 
         page.add(group)
+        page.add(folders)
         prefs.add(page)
         prefs.present()
 
@@ -116,22 +133,22 @@ class MemoriesApplication(Adw.Application):
         if shortcuts:
             self.set_accels_for_action(f"app.{name}", shortcuts)
 
-    def clearFolders(self, btn):
+    def set_delay(self, widget):
+        self.settings.set_int("image-change-delay", widget.get_value())  # clear GSettings
+
+
+    def clear_folders(self, btn):
         """Clear all saved image folders."""
         self.settings.set_strv("image-folders", [])  # clear GSettings
         print("All folders cleared!")
 
-        # If the main window has a carousel, refresh it
-        win = self.props.active_window
-        if win and hasattr(win, "carousel"):
-            win.carousel.load_images_from_settings()  # reload carousel
 
 
-    def selectFolder(self, btn):
+    def select_folder(self, btn):
         dialog = Gtk.FileDialog()
-        dialog.select_folder(self.props.active_window, None, self.onFolderSelected)
+        dialog.select_folder(self.props.active_window, None, self.on_folder_selected)
 
-    def onFolderSelected(self, dialog, result):
+    def on_folder_selected(self, dialog, result):
         folder = dialog.select_folder_finish(result)
         if folder:
             path = folder.get_path()
@@ -147,3 +164,4 @@ def main(version):
     """The application's entry point."""
     app = MemoriesApplication()
     return app.run(sys.argv)
+

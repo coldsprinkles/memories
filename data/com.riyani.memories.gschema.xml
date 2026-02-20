@@ -6,6 +6,11 @@
       <summary>List of image folders</summary>
       <description>Stores paths of folders to load images from.</description>
     </key>
+	  <key name="image-change-delay" type="i">
+      <default>2</default>
+      <summary>Delay between image swipes</summary>
+      <description>Stores the seconds between image swipes.</description>
+    </key>
 	</schema>
 </schemalist>
 
